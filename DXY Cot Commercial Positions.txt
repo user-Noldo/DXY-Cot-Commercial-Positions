@@ -1,0 +1,71 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Noldo
+
+//@version=4
+study("DXY COT Commercial Positions" , overlay = false)
+src = close[0]
+
+bFX = false 
+
+//Can't set bFX as an input because plot and legend titles require literals
+// INPUTS
+
+sCalc  = "MARKETS"
+// ***** MARKET TYPES *****
+
+// Financial Markets (Commercial)
+
+bTotal = (sCalc == "MARKETS")
+sHead = "QUANDL:CFTC/"
+
+sLong = "_F_L_ALL|4"
+sShort = "_F_L_ALL|5"
+iWidth = 2
+
+
+// COT CFTC Auto Generation Codes 
+
+//Data functions
+dLong(asCode) =>  security(sHead + asCode + (sLong),   "W", close, lookahead=barmerge.lookahead_on)
+dShort(asCode) => security(sHead +asCode + (sShort),   "W", close, lookahead=barmerge.lookahead_on)
+
+// MAIN COT COMMERCIAL NET POSITION FUNCTION 
+
+_pos_futures_short(_code) => dShort(_code)
+_pos_futures_long(_code)  => dLong (_code)
+
+pos_net(_code) => _pos_futures_short(_code) - _pos_futures_long(_code)
+
+// Currencies
+
+sCode1 = "099741" // EUR/USD Weight = -0.618
+sCode2 = "097741" // JPY/USD Weight = -0.136
+sCode3 = "096742" // GBP/USD Weight = -0.119
+sCode4 = "090741" // CAD/USD Weight = -0.091
+sCode5 = "092741" // CHF/USD Weight = -0.036
+
+// Definition : COT Commercial Positions
+
+_eur = pos_net(sCode1)
+_jpy = pos_net(sCode2)
+_gbp = pos_net(sCode3)
+_cad = pos_net(sCode4)
+_chf = pos_net(sCode5)
+
+// Weights
+
+w1 = -0.618 
+w2 = -0.136
+w3 = -0.119
+w4 = -0.091
+w5 = -0.036
+
+// COT COMMERCIAL DXY POSITIONS 
+
+_dxy = _eur * w1 + _jpy * w2 + _gbp * w3 + _cad * w4 + _chf * w5
+
+
+// Plot data
+
+plot(_dxy , color = color.navy , linewidth = 2 , style = plot.style_area , transp = 20)
+
